@@ -1,0 +1,34 @@
+//- layout.jade
+doctype html
+html(lang="en")
+  head
+    block title
+      title User Modeling NodeJS Starter Application
+ 
+    meta(charset="utf-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+
+    link(rel="shortcut icon", href="/images/favicon.ico", type="image/x-icon")
+    link(rel="icon", href="/images/favicon.ico", type="image/x-icon")
+    link(rel="stylesheet", href="/css/watson-bootstrap-dark.css")
+    link(rel="stylesheet", href="/css/browser-compatibility.css")
+    link(rel="stylesheet", href="/css/watson-code.css")
+    link(rel="stylesheet", href="/css/style.css")
+
+  body
+    div.container
+      div.header.row
+        div.col-lg-3
+          img(src="/images/app.png")
+        div.col-lg-8
+          h2 Witson: Use IBM Watson to add emotional insight to your Wit.ai Instance
+          p The Watson User Modeling service uses linguistic analytics to extract
+            | a spectrum of cognitive and social characteristics from text.
+            | 
+            | Wit.ai is an API that makes it very easy for developers to create 
+            | applications or devices that you can talk to. Any app, or any device, 
+            | like a smart watch, Google Glass, Nest, even a car, can stream audio to 
+            | the Wit API, and get actionable data in return
+      block row-content
+    script(type='text/javascript', src="/js/css_browser_selector.js")

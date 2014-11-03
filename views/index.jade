@@ -1,0 +1,46 @@
+//- index.jade
+extends ./layout.jade
+
+block row-content
+  div.row
+    div.col-lg-6
+      h2 Try the service
+      div(style="height: 400px; overflow: auto;").well
+        form.form-horizontal(method='post')
+          fieldset
+            div.form-group.row
+              div.col-lg-12
+                textarea#textArea2.form-control(name="apikey", rows='3', style='margin-bottom: 10px;'
+                  placeholder="Enter your Wit API Key to use your own training data. If left blank it will use my personal training data.") 
+                  |#{apikey}
+                textarea#textArea.form-control(name="content", rows='3', 
+                  placeholder="Enter a command to send to Wit.ai (e.g. 'turn on the lights')", required="true") 
+                  |#{content}
+            div.form-group.row(style='margin-bottom: 0px; padding-top: 5px;')
+              div.col-lg-4.col-lg-push-4
+                button.btn.btn-block(type='button',onclick="window.location = './?reset=true'",) Clear
+              div.col-lg-4.col-lg-push-4
+
+                button.btn.btn-block(type='submit') Analyze
+    div.col-lg-6
+      h2 Output
+      div.row
+        div.col-lg-12
+          if traits
+            div(style="height: 400px; overflow: auto;").well
+              for trait in traits
+                div.row(class='flag_#{trait.title}')
+                  div.col-lg-10 
+                    span #{trait.id}
+                  div.col-lg-2
+                    span #{trait.value}
+          if error
+            div.well
+              div.row
+                div.col-lg-12
+                  p(style="font-weight:bold;color:red;") Error: #{error}
+  if viz
+    div.row
+      div.col-lg-12
+        h2 Visualization
+        != viz

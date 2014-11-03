@@ -1,0 +1,17 @@
+{
+	"laxcomma": true,
+	"node": true,
+	"browser": true,
+	"globals": {
+		"angular"			: false,
+		"google"				: false,
+		"MarkerClusterer"	: false,
+		"MediaElement"		: false,
+		"describe"			: false,
+		"it"					: false,
+		"before"				: false,
+		"beforeEach"		: false,
+		"after"				: false,
+		"afterEach"			: false
+	}
+}

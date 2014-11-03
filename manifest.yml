@@ -1,0 +1,11 @@
+applications:
+- services:
+  - Witson-user_modeling
+  disk_quota: 1024M
+  host: Witson
+  name: Witson
+  command: node app.js
+  path: .
+  domain: mybluemix.net
+  instances: 1
+  memory: 512M
