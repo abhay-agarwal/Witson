@@ -5,7 +5,7 @@ block row-content
   div.row
     div.col-lg-6
       h2 Try the service
-      div(style="height: 400px; overflow: auto;").well
+      div(style="height: 600px; overflow: auto;").well
         form.form-horizontal(method='post')
           fieldset
             div.form-group.row
@@ -13,27 +13,31 @@ block row-content
                 textarea#textArea2.form-control(name="apikey", rows='3', style='margin-bottom: 10px;'
                   placeholder="Enter your Wit API Key to use your own training data. If left blank it will use my personal training data.") 
                   |#{apikey}
-                textarea#textArea.form-control(name="content", rows='3', 
+                textarea#textArea.form-control(name="content", rows='3',
                   placeholder="Enter a command to send to Wit.ai (e.g. 'turn on the lights')", required="true") 
                   |#{content}
             div.form-group.row(style='margin-bottom: 0px; padding-top: 5px;')
               div.col-lg-4.col-lg-push-4
                 button.btn.btn-block(type='button',onclick="window.location = './?reset=true'",) Clear
               div.col-lg-4.col-lg-push-4
-
                 button.btn.btn-block(type='submit') Analyze
+        div(style='margin-top: 10px;')
+          p About this: Wit.ai allows anyone to create a software interface out of natural language. A user can 
+            | extract actionable data from spoken or typed commands that may have varied verbal and grammatical 
+            | structures. For example, the phrase 'turn the lights on' could be reworded as 'turn on my lights' or 
+            | 'can you make it bright in here?' Wit makes it easy to integrate these variations into your interface 
+            | without manually creating complex rules. I built upon the capabilities of Wit by providing a way to 
+            | extract meaningful emotional data as well as intent. By scanning a recent history of your wit.ai 
+            | training data, it is possible to visualize the dominant emotions contained in your interactions. This 
+            | information could then be used to modify the way the system responds to create a more personalized 
+            | experience.
     div.col-lg-6
-      h2 Output
+      h2 Witson Responds:
       div.row
         div.col-lg-12
-          if traits
-            div(style="height: 400px; overflow: auto;").well
-              for trait in traits
-                div.row(class='flag_#{trait.title}')
-                  div.col-lg-10 
-                    span #{trait.id}
-                  div.col-lg-2
-                    span #{trait.value}
+          if result
+            pre(style="height: 600px; overflow: auto; font-size: 10px;").well.prettyprint
+              #{result}
           if error
             div.well
               div.row

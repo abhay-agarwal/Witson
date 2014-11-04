@@ -31,7 +31,7 @@ app.use(express.static(__dirname + '/public')); //setup static public directory
 app.set('view engine', 'jade');
 app.set('views', __dirname + '/views'); //optional since express defaults to CWD/views
 
-// There are many useful environment variables available in process.env.
+// There are many useful environment variables available in process.env
 // VCAP_APPLICATION contains useful information about a deployed application.
 var appInfo = JSON.parse(process.env.VCAP_APPLICATION || "{}");
 // TODO: Get application information and use it in your app.
@@ -81,6 +81,7 @@ app.get('/', function(req, res) {
 	res.render('index', {'content': ''});
 });
 
+//submit witson form
 app.post('/', function(req, res){
 
 	// See User Modeling API docs. Path to profile analysis is /api/v2/profile
@@ -99,9 +100,9 @@ app.post('/', function(req, res){
 
 	var wit_key = req.body.apikey.trim() || ACCESS_TOKEN;
 	var test_command = req.body.content.trim();
-
 	if (!test_command) return res.render('index', {'error': 'You forgot to enter a command'});
 
+	//asynchronously execute these actions in series:
 	async.waterfall([
 		function (callback) { //grab max 10 intents from the user (to minimize API calls)
 			var getIntents = {
@@ -117,7 +118,7 @@ app.post('/', function(req, res){
 				return callback(err || {message: 'Your API has no training data'});
 			});
 		},
-		function (intents, callback) { //generate a list of each intent's expressions
+		function (intents, callback) { //grab max 25 of each intent's expressions
 
 			async.concat(intents, function (intent, expanded) {
 				var getExpressions = {
@@ -137,7 +138,7 @@ app.post('/', function(req, res){
 				if (!expressions || !expressions.length) 
 					return callback({message: 'Your API has no registered expressions'});
 
-				return callback(err, expressions);
+				return callback(err, expressions.slice(0,40));
 			});
 		},
 		function (expressions, callback) { //concatenate the bodies of the expressions
@@ -147,37 +148,59 @@ app.post('/', function(req, res){
 				return callback(err, trainingData);
 			});
 		},
-		function (trainingData, callback) { //make a call to IBM with wit's expression blob
-			var toAnalyze = trainingData + " " + req.body.content;
-			// create a profile request with the text and the htpps options and call it
-			create_profile_request(profile_options,toAnalyze)(function(error,profile_string) {
-				if (error) return callback(error);
-				
-				// parse the profile and format it
-				var profile_json = JSON.parse(profile_string);
-				var flat_traits = flatten.flat(profile_json.tree);
-
-				// Extend the profile options and change the request path to get the visualization
-				// Path to visualization is /api/v2/visualize, add w and h to get 900x900 chart
-				var viz_options = extend(profile_options, { path :  parts.pathname + 
-					"/api/v2/visualize?w=900&h=900&imgurl=%2Fimages%2Fapp.png"});
-
-				// create a visualization request with the profile data
-				create_viz_request(viz_options,profile_string)(function(error,viz) {
-					if (error) return callback(error);
-					
-					return callback(null, {
-						'apikey':req.body.apikey, 
-						'content': req.body.content, 
-						'traits': flat_traits, 
-						'viz':viz
+		function (trainingData, callback) { //make the two magic calls
+			var metadata = {};
+			async.parallel([
+				function (done) { //make a call to Wit with our current command
+					wit.captureTextIntent(wit_key, req.body.content, function (err, res) {
+						if (err) return done(err);
+						metadata.wit = res;
+						return done(null);
 					});
+				},
+				function (done) { //make a call to IBM with wit's expression blob
+					var toAnalyze = trainingData + " " + req.body.content;
+					// create a profile request with the text and the htpps options and call it
+					create_profile_request(profile_options,toAnalyze)(function(error,profile_string) {
+						if (error) return done(error);
+						
+						// parse the profile and format it
+						var profile_json = JSON.parse(profile_string);
+
+						var sortingFunction = function (a, b) {
+							return b.intensity - a.intensity;
+						};
+						metadata.attributes = flatten.flat(profile_json.tree).sort(sortingFunction);
+
+						// Extend the profile options and change the request path to get the visualization
+						// Path to visualization is /api/v2/visualize, add w and h to get 900x900 chart
+						var viz_options = extend(profile_options, { path :  parts.pathname + 
+							"/api/v2/visualize?w=900&h=900&imgurl=%2Fimages%2Fapp.png"});
+
+						// create a visualization request with the profile data
+						create_viz_request(viz_options,profile_string)(function(error,viz) {
+							if (error) return done(error);
+							metadata.viz = viz;
+							return done(null);
+						});
+					});
+				}
+			], function (err) {
+				if (err) return callback(err);
+
+				metadata.wit.dominant_emotions = metadata.attributes.slice(0,5);
+
+				return callback(null, {
+					'apikey':req.body.apikey, 
+					'content': req.body.content,
+					'result': JSON.stringify(metadata.wit, null, 2),
+					'viz': metadata.viz
 				});
 			});
 		}
-	], function (err, display) {
+	], function (err, toRender) {
 		if (err) return res.render('index', {'error': err.message});
-		else return res.render('index', display);
+		else return res.render('index', toRender);
 	});
 });
 
