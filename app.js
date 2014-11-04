@@ -170,6 +170,7 @@ app.post('/', function(req, res){
 						var sortingFunction = function (a, b) {
 							return b.intensity - a.intensity;
 						};
+						//sort the emotional data by dominance
 						metadata.attributes = flatten.flat(profile_json.tree).sort(sortingFunction);
 
 						// Extend the profile options and change the request path to get the visualization
